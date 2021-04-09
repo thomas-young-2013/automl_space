@@ -46,10 +46,11 @@ class AdaptiveTuner(object):
 
         history_list = list()
         if len(self.history_dict.keys()) > 0 and hp_num < len(self.importance_list):
-            new_hp = self.importance_list[hp_num]
+            new_hp = self.importance_list[self._hp_cnt]
+            print('hp_num=', self._hp_cnt, 'new hp is', new_hp)
             for _config in self.history_dict.keys():
                 # Impute the default value for new hyperparameter.
-                _config_dict = _config.copy()
+                _config_dict = _config.get_dictionary().copy()
                 _config_dict[new_hp] = self.defaults[new_hp]
                 history_list.append((_config_dict, self.history_dict[_config]))
         return cs, history_list
@@ -63,7 +64,7 @@ class AdaptiveTuner(object):
             config_dict[_missing_key] = self.defaults[_missing_key]
         _config = deactivate_inactive_hyperparameters(configuration_space=self.config_space,
                                                       configuration=config_dict)
-        return self.objective_function(_config)
+        return {'objs': (self.objective_function(_config),)}
 
     def iterate(self):
         config_space, hist_list = self.get_configspace()
@@ -73,8 +74,8 @@ class AdaptiveTuner(object):
             init_num = 3
         smbo = SMBO(self.evaluate_wrapper, config_space,
                     max_runs=self.step_size,
-                    init_num=init_num)
-
+                    init_num=init_num, task_id='smbo%d' % self._hp_cnt)
+        smbo.run()
         # Init the history trials.
         for _config_dict, _perf in hist_list:
             config = deactivate_inactive_hyperparameters(configuration_space=config_space,
@@ -85,8 +86,7 @@ class AdaptiveTuner(object):
         # Save the runhistory.
         self.history_dict = OrderedDict()
         for _config, perf in zip(smbo.config_advisor.configurations, smbo.config_advisor.perfs):
-            _config_dict = _config.get_dictionary()
-            self.history_dict[_config_dict] = perf
+            self.history_dict[_config] = perf
 
         if self._hp_cnt < len(self.importance_list) - 1:
             self._hp_cnt += 1

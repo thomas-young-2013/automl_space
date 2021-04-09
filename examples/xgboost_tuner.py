@@ -1,19 +1,21 @@
-import numpy as np
-from litebo.utils.config_space import ConfigurationSpace
-from ConfigSpace.hyperparameters import UniformFloatHyperparameter, UniformIntegerHyperparameter
 import os
 import sys
+import numpy as np
+import pickle as pkl
+from litebo.utils.config_space import ConfigurationSpace
+from ConfigSpace.hyperparameters import UniformFloatHyperparameter, UniformIntegerHyperparameter
 
 sys.path.append(os.getcwd())
 sys.path.append("../soln-ml")
 
 from solnml.datasets.utils import load_train_test_data
+from automlspace.adaptive_tuner import AdaptiveTuner
 
 path = os.path.dirname(os.path.realpath(__file__))
 
 train_node, test_node = load_train_test_data('spambase', data_dir='../soln-ml/', task_type=0)
-train_x, train_y = train_node.data
-test_x, test_y = test_node.data
+x_train, y_train = train_node.data
+x_val, y_val = test_node.data
 
 
 class XGBoost:
@@ -62,7 +64,7 @@ class XGBoost:
     @staticmethod
     def get_cs():
         cs = ConfigurationSpace()
-        n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, q=50, default_value=500)
+        n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, q=10, default_value=500)
         max_depth = UniformIntegerHyperparameter("max_depth", 1, 12)
         learning_rate = UniformFloatHyperparameter("learning_rate", 1e-3, 0.9, log=True, default_value=0.1)
         min_child_weight = UniformFloatHyperparameter("min_child_weight", 0, 10, q=0.1, default_value=1)
@@ -79,7 +81,8 @@ class XGBoost:
 cs = XGBoost.get_cs()
 
 
-def objective_func(config, x_train, x_val, y_train, y_val):
+def objective_func(config):
+    global x_train, x_val, y_train, y_val
     conf_dict = config.get_dictionary()
     model = XGBoost(**conf_dict, n_jobs=4, seed=1)
     model.fit(x_train, y_train)
@@ -91,28 +94,25 @@ def objective_func(config, x_train, x_val, y_train, y_val):
     return perf
 
 
-import pickle as pkl
-
-dump_mode = False
-if dump_mode:
+method = 'bo'
+if method == 'random_search':
     rep_num = 1000
     X = []
     Y = []
     for i in range(rep_num):
         config = cs.sample_configuration()
         X.append(list(config.get_dictionary().values()))
-        Y.append(objective_func(config, train_x, test_x, train_y, test_y))
-        print(i)
+        Y.append(objective_func(config))
+        print('Iteration', i)
     X = np.array(X)
     Y = np.array(Y)
     with open('results.pkl', 'wb') as f:
         pkl.dump((X, Y), f)
-
+elif method == 'bo':
+    importance_list = ['n_estimators', 'learning_rate', 'max_depth', 'colsample_bytree', 'gamma',
+                       'min_child_weight',  'reg_alpha', 'reg_lambda', 'subsample']
+    tuner = AdaptiveTuner(objective_func, cs, importance_list, max_run=100)
+    tuner.run()
 else:
     with open('results.pkl', 'rb') as f:
         X, Y = pkl.load(f)
-
-
-# marginal for first parameter
-keys = ['colsample_bytree', 'gamma', 'learning_rate', 'max_depth',
-        'min_child_weight', 'n_estimators', 'reg_alpha', 'reg_lambda', 'subsample']
