@@ -145,7 +145,7 @@ for dataset in datasets:
         for config in configs:
             X.append(config.get_dictionary())
             Y.append(objective_func(config, train_x, test_x, train_y, test_y))
-        with open('%s_%s_%d.pkl' % (algo_id, dataset, rep_num), 'wb') as f:
+        with open('./data/%s_%s_%d.pkl' % (algo_id, dataset, rep_num), 'wb') as f:
             pkl.dump((X, Y), f)
     except Exception as e:
         print(e)
