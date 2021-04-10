@@ -23,7 +23,7 @@ def load_train_test_data(dataset, data_dir='./', test_size=0.2, task_type=0, ran
 
 
 def load_data(dataset, data_dir='./'):
-    dm = DataManager()
+    dm = DataManager(na_values=[])
     data_path = data_dir + 'data/openml100/%s.csv' % dataset
 
     # Load train data.
@@ -37,7 +37,7 @@ def load_data(dataset, data_dir='./'):
     sep = ','
 
     train_data_node = dm.load_train_csv(data_path, label_col=label_column, header=header, sep=sep,
-                                        na_values=["n/a", "na", "--", "-", "?"])
+                                        na_values=["n/a", "na", "--", "?"], keep_default_na=False)
     train_data_node = dm.preprocess_fit(train_data_node)
     X, y = train_data_node.data
     feature_types = train_data_node.feature_types
