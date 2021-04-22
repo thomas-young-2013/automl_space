@@ -1,15 +1,28 @@
 import os
 import sys
+import argparse
 import numpy as np
 import pickle as pkl
+import matplotlib.pyplot as plt
+from litebo.optimizer.generic_smbo import SMBO
 from litebo.utils.config_space import ConfigurationSpace
 from ConfigSpace.hyperparameters import UniformFloatHyperparameter, UniformIntegerHyperparameter
 
 sys.path.append(os.getcwd())
 sys.path.append("../soln-ml")
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--dataset', type=str, default='spambase')
+parser.add_argument('--method', type=str, default='ada-bo')
+parser.add_argument('--algo', type=str, default='xgboost')
+parser.add_argument('--max_run', type=int, default=30)
+
+args = parser.parse_args()
+max_run = args.max_run
+
 from solnml.datasets.utils import load_train_test_data
 from automlspace.adaptive_tuner import AdaptiveTuner
+from automlspace.random_tuner import RandomTuner
 
 path = os.path.dirname(os.path.realpath(__file__))
 
@@ -94,25 +107,89 @@ def objective_func(config):
     return perf
 
 
-method = 'bo'
-if method == 'random_search':
-    rep_num = 1000
-    X = []
-    Y = []
-    for i in range(rep_num):
-        config = cs.sample_configuration()
-        X.append(list(config.get_dictionary().values()))
-        Y.append(objective_func(config))
-        print('Iteration', i)
-    X = np.array(X)
-    Y = np.array(Y)
-    with open('results.pkl', 'wb') as f:
-        pkl.dump((X, Y), f)
-elif method == 'bo':
+def plot_convergence(x, y1, y2,
+                     xlabel="Number of iterations $n$",
+                     ylabel=r"Min objective value after $n$ iterations",
+                     ax=None, name=None, alpha=0.2, yscale=None,
+                     color=None, true_minimum=None, **kwargs):
+    """Plot one or several convergence traces.
+
+    Parameters
+    ----------
+    args[i] :  `OptimizeResult`, list of `OptimizeResult`, or tuple
+        The result(s) for which to plot the convergence trace.
+
+        - if `OptimizeResult`, then draw the corresponding single trace;
+        - if list of `OptimizeResult`, then draw the corresponding convergence
+          traces in transparency, along with the average convergence trace;
+        - if tuple, then `args[i][0]` should be a string label and `args[i][1]`
+          an `OptimizeResult` or a list of `OptimizeResult`.
+
+    ax : `Axes`, optional
+        The matplotlib axes on which to draw the plot, or `None` to create
+        a new one.
+
+    true_minimum : float, optional
+        The true minimum value of the function, if known.
+
+    yscale : None or string, optional
+        The scale for the y-axis.
+
+    Returns
+    -------
+    ax : `Axes`
+        The matplotlib axes.
+    """
+    if ax is None:
+        ax = plt.gca()
+
+    ax.set_title("Convergence plot")
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.grid()
+
+    if yscale is not None:
+        ax.set_yscale(yscale)
+
+    ax.plot(x, y1, c=color, label=name, **kwargs)
+    ax.scatter(x, y2, c=color, alpha=alpha)
+
+    if true_minimum is not None:
+        ax.axhline(true_minimum, linestyle="--",
+                   color="r", lw=1,
+                   label="True minimum")
+
+    if true_minimum is not None or name is not None:
+        ax.legend(loc="upper right")
+    return ax
+
+
+method = 'random-search'
+if method == 'random-search':
+    tuner = RandomTuner(objective_func, cs, max_run=max_run)
+    tuner.run()
+    print(tuner.get_incumbent())
+elif method == 'ada-bo':
     importance_list = ['n_estimators', 'learning_rate', 'max_depth', 'colsample_bytree', 'gamma',
                        'min_child_weight',  'reg_alpha', 'reg_lambda', 'subsample']
-    tuner = AdaptiveTuner(objective_func, cs, importance_list, max_run=100)
+    tuner = AdaptiveTuner(objective_func, cs, importance_list, max_run=max_run, step_size=6)
     tuner.run()
+    print(tuner.get_incumbent())
+elif method == 'lite-bo':
+    bo = SMBO(objective_func, cs,
+              advisor_type='default',
+              max_runs=max_run,
+              task_id='tuning-litebo',
+              logging_dir='logs')
+    bo.run()
+    print(bo.get_incumbent())
+elif method == 'tpe':
+    bo = SMBO(objective_func, cs,
+              advisor_type='default',
+              max_runs=max_run,
+              task_id='tuning-tpe',
+              logging_dir='logs')
+    bo.run()
+    print(bo.get_incumbent())
 else:
-    with open('results.pkl', 'rb') as f:
-        X, Y = pkl.load(f)
+    raise ValueError('Invalid method id - %s.' % args.method)
