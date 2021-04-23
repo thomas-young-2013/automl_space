@@ -12,6 +12,7 @@ sys.path.append("../soln-ml")
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='spambase')
 parser.add_argument('--method', type=str, default='ada-bo')
+parser.add_argument('--space_size', type=str, default='large')
 parser.add_argument('--algo', type=str, default='xgboost')
 parser.add_argument('--max_run', type=int, default=30)
 
@@ -33,8 +34,18 @@ path = os.path.dirname(os.path.realpath(__file__))
 train_node, test_node = load_train_test_data(args.dataset, data_dir='../soln-ml/', task_type=0)
 x_train, y_train = train_node.data
 x_val, y_val = test_node.data
-# cs = XGBoost.get_cs()
-cs = LightGBM.get_hyperparameter_search_space(space_size='small')
+
+if algo == 'xgboost':
+    model_class = XGBoost
+elif algo == 'lightgbm':
+    model_class = LightGBM
+elif algo == 'adaboost':
+    model_class = Adaboost
+elif algo == 'random_forest':
+    model_class = RandomForest
+else:
+    raise ValueError('Invalid algorithm~')
+cs = model_class.get_hyperparameter_search_space(space_size=args.space_size)
 
 
 def objective_func(config):
@@ -65,8 +76,21 @@ if method == 'random-search':
     tuner.run()
     print(tuner.get_incumbent())
 elif method == 'ada-bo':
-    importance_list = ['n_estimators', 'learning_rate', 'max_depth', 'colsample_bytree', 'gamma',
-                       'min_child_weight',  'reg_alpha', 'reg_lambda', 'subsample']
+    if algo == 'xgboost':
+        importance_list = ['n_estimators', 'learning_rate', 'max_depth', 'colsample_bytree', 'gamma',
+                           'min_child_weight', 'reg_alpha', 'reg_lambda', 'subsample']
+    elif algo == 'lightgbm':
+        importance_list = ['reg_alpha', 'learning_rate', 'colsample_bytree', 'n_estimators',
+                           'min_child_weight', 'num_leaves', 'reg_lambda', 'subsample', 'max_depth']
+    elif algo == 'adaboost':
+        importance_list = ['max_depth', 'learning_rate', 'n_estimators', 'algorithm']
+    elif algo == 'random_forest':
+        importance_list = ['max_features', 'max_depth', 'min_samples_leaf', 'n_estimators',
+                           'min_samples_split', 'bootstrap', 'criterion', 'max_leaf_nodes',
+                           'min_impurity_decrease', ' min_weight_fraction_leaf']
+    else:
+        raise ValueError('Invalid algorithm~')
+
     tuner = AdaptiveTuner(objective_func, cs, importance_list, max_run=max_run, step_size=6)
     tuner.run()
     print(tuner.get_incumbent())
@@ -88,3 +112,6 @@ elif method == 'tpe':
     print(bo.get_incumbent())
 else:
     raise ValueError('Invalid method id - %s.' % args.method)
+
+
+# TODO: 1) save result, 2) plot convergence
