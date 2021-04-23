@@ -1,3 +1,4 @@
+import numpy as np
 from collections import OrderedDict
 from litebo.optimizer.generic_smbo import SMBO
 from litebo.utils.config_space import ConfigurationSpace
@@ -53,6 +54,8 @@ class AdaptiveTuner(object):
                 _config_dict = _config.get_dictionary().copy()
                 _config_dict[new_hp] = self.defaults[new_hp]
                 history_list.append((_config_dict, self.history_dict[_config]))
+        if len(history_list) == 0:
+            history_list = [(_config, self.history_dict[_config]) for _config in self.history_dict.keys()]
         return cs, history_list
 
     def evaluate_wrapper(self, config):
@@ -75,13 +78,16 @@ class AdaptiveTuner(object):
         smbo = SMBO(self.evaluate_wrapper, config_space,
                     max_runs=self.step_size,
                     init_num=init_num, task_id='smbo%d' % self._hp_cnt)
-        smbo.run()
+
         # Init the history trials.
         for _config_dict, _perf in hist_list:
             config = deactivate_inactive_hyperparameters(configuration_space=config_space,
                                                          configuration=_config_dict)
             smbo.config_advisor.configurations.append(config)
             smbo.config_advisor.perfs.append(_perf)
+            smbo.config_advisor.history_container.add(config, _perf)
+
+        smbo.run()
 
         # Save the runhistory.
         self.history_dict = OrderedDict()
@@ -90,3 +96,11 @@ class AdaptiveTuner(object):
 
         if self._hp_cnt < len(self.importance_list) - 1:
             self._hp_cnt += 1
+
+    def get_history(self):
+        return list(self.history_dict.items())
+
+    def get_incumbent(self):
+        items = list(self.history_dict.items())
+        inc_idx = np.argmin([_item[1] for _item in items])
+        return items[inc_idx]
