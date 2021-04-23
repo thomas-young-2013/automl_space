@@ -6,7 +6,7 @@ from lightgbm import LGBMClassifier
 
 class LightGBM:
     def __init__(self, n_estimators, num_leaves, learning_rate, max_depth, min_child_weight,
-                 subsample, colsample_bytree, reg_alpha, reg_lambda, random_state=None):
+                 subsample, colsample_bytree, reg_alpha, reg_lambda, n_jobs=4, random_state=None):
         self.n_estimators = int(n_estimators)
         self.num_leaves = num_leaves
         self.learning_rate = learning_rate
@@ -17,7 +17,7 @@ class LightGBM:
         self.reg_alpha = reg_alpha
         self.reg_lambda = reg_lambda
 
-        self.n_jobs = 4
+        self.n_jobs = n_jobs
         self.random_state = random_state
         self.estimator = None
 

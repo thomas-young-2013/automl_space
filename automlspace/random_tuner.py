@@ -7,6 +7,7 @@ class RandomTuner(object):
     def __init__(self, objective_function, config_space, max_run=100, random_state=1):
         self.objective_function = objective_function
         self.config_space = config_space
+        self.config_space.seed(random_state)
         self.max_run = max_run
         self.random_state = random_state
         self.history_dict = OrderedDict()

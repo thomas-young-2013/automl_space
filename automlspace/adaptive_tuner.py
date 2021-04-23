@@ -11,6 +11,7 @@ class AdaptiveTuner(object):
         self.objective_function = objective_function
         self.importance_list = importance_list
         self.config_space = config_space
+        self.config_space.seed(random_state)
         self.step_size = step_size
         self.max_run = max_run
         self.random_state = random_state
