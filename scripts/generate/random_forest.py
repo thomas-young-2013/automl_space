@@ -126,27 +126,28 @@ def objective_func(config, x_train, x_val, y_train, y_val):
     return perf
 
 
-args = parser.parse_args()
-datasets = args.datasets.split(',')
-check_datasets(datasets, data_dir='../soln-ml/')
-rep_num = args.rep_num
+if __name__ == '__main__':
+    args = parser.parse_args()
+    datasets = args.datasets.split(',')
+    check_datasets(datasets, data_dir='../soln-ml/')
+    rep_num = args.rep_num
 
-algo_id = 'random_forest'
+    algo_id = 'random_forest'
 
-for dataset in datasets:
-    try:
-        train_node, test_node = load_train_test_data(dataset, data_dir='../soln-ml/')
-        train_x, train_y = train_node.data
-        test_x, test_y = test_node.data
+    for dataset in datasets:
+        try:
+            train_node, test_node = load_train_test_data(dataset, data_dir='../soln-ml/')
+            train_x, train_y = train_node.data
+            test_x, test_y = test_node.data
 
-        X = []
-        Y = []
-        configs = cs.sample_configuration(rep_num)
-        for config in configs:
-            X.append(config.get_dictionary())
-            Y.append(objective_func(config, train_x, test_x, train_y, test_y))
-        with open('./data/%s_%s_%d.pkl' % (algo_id, dataset, rep_num), 'wb') as f:
-            pkl.dump((X, Y), f)
-    except Exception as e:
-        print(e)
-        print('%s failed!' % dataset)
+            X = []
+            Y = []
+            configs = cs.sample_configuration(rep_num)
+            for config in configs:
+                X.append(config.get_dictionary())
+                Y.append(objective_func(config, train_x, test_x, train_y, test_y))
+            with open('./data/%s_%s_%d.pkl' % (algo_id, dataset, rep_num), 'wb') as f:
+                pkl.dump((X, Y), f)
+        except Exception as e:
+            print(e)
+            print('%s failed!' % dataset)
