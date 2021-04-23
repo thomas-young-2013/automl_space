@@ -79,14 +79,14 @@ class AdaptiveTuner(object):
             init_num = 3
 
         # Set the number of iterations.
-        eta = 3
-        if self._hp_cnt > 0:
-            iter_num = eta ** (self._hp_cnt + 1) - eta ** self._hp_cnt
-            if eta ** (self._hp_cnt + 1) > self.max_run:
-                iter_num = self.max_run - eta ** self._hp_cnt
-        else:
-            iter_num = eta
-        # iter_num = self.step_size
+        # eta = 3
+        # if self._hp_cnt > 0:
+        #     iter_num = eta ** (self._hp_cnt + 1) - eta ** self._hp_cnt
+        #     if eta ** (self._hp_cnt + 1) > self.max_run:
+        #         iter_num = self.max_run - eta ** self._hp_cnt
+        # else:
+        #     iter_num = eta
+        iter_num = self.step_size
 
         smbo = SMBO(self.evaluate_wrapper, config_space,
                     max_runs=iter_num,
