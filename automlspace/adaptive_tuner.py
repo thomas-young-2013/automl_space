@@ -71,15 +71,28 @@ class AdaptiveTuner(object):
 
     def iterate(self):
         config_space, hist_list = self.get_configspace()
+
+        # Set the number of initial number.
         if len(hist_list) > 0:
             init_num = 0
         else:
             init_num = 3
+
+        # Set the number of iterations.
+        eta = 3
+        if self._hp_cnt > 0:
+            iter_num = eta ** (self._hp_cnt + 1) - eta ** self._hp_cnt
+            if eta ** (self._hp_cnt + 1) > self.max_run:
+                iter_num = self.max_run - eta ** self._hp_cnt
+        else:
+            iter_num = eta
+        # iter_num = self.step_size
+
         smbo = SMBO(self.evaluate_wrapper, config_space,
-                    max_runs=self.step_size,
+                    max_runs=iter_num,
                     init_num=init_num, task_id='smbo%d' % self._hp_cnt)
 
-        # Init the history trials.
+        # Set the history trials.
         for _config_dict, _perf in hist_list:
             config = deactivate_inactive_hyperparameters(configuration_space=config_space,
                                                          configuration=_config_dict)
