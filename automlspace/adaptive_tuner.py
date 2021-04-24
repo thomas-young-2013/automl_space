@@ -47,7 +47,7 @@ class AdaptiveTuner(object):
                     cs.add_hyperparameter(_hp)
 
         history_list = list()
-        if len(self.history_dict.keys()) > 0 and hp_num < len(self.importance_list):
+        if len(self.history_dict.keys()) > 0 and hp_num <= len(self.importance_list):
             new_hp = self.importance_list[self._hp_cnt]
             print('hp_num=', self._hp_cnt, 'new hp is', new_hp)
             for _config in self.history_dict.keys():
@@ -72,6 +72,8 @@ class AdaptiveTuner(object):
 
     def iterate(self):
         config_space, hist_list = self.get_configspace()
+        # print(self._hp_cnt, config_space)
+        # print(self._hp_cnt, hist_list)
 
         # Set the number of initial number.
         if len(hist_list) > 0:

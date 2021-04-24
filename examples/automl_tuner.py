@@ -46,7 +46,7 @@ elif algo == 'random_forest':
 else:
     raise ValueError('Invalid algorithm~')
 cs = model_class.get_hyperparameter_search_space(space_size=args.space_size)
-
+print(cs)
 
 def objective_func(config):
     global x_train, x_val, y_train, y_val
@@ -87,7 +87,7 @@ elif method == 'ada-bo':
     elif algo == 'random_forest':
         importance_list = ['max_features', 'max_depth', 'min_samples_leaf', 'n_estimators',
                            'min_samples_split', 'bootstrap', 'criterion', 'max_leaf_nodes',
-                           'min_impurity_decrease', ' min_weight_fraction_leaf']
+                           'min_impurity_decrease', 'min_weight_fraction_leaf']
     else:
         raise ValueError('Invalid algorithm~')
 
