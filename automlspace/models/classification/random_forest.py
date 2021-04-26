@@ -89,12 +89,12 @@ class RandomForest:
         """
         cs = ConfigurationSpace()
         if space_size == 'large':
-            max_features = UniformFloatHyperparameter("max_features", 0., 1., default_value=0.5)
+            n_estimators = UniformIntegerHyperparameter('n_estimators', 50, 800, default_value=100)
             max_depth = UniformIntegerHyperparameter("max_depth", 4, 12, default_value=5)
+            max_features = UniformFloatHyperparameter("max_features", 0.3, 1., default_value=0.5)
+
             min_samples_leaf = UniformIntegerHyperparameter(
                 "min_samples_leaf", 1, 20, default_value=1)
-
-            n_estimators = UniformIntegerHyperparameter('n_estimators', 50, 1000, default_value=100)
             min_samples_split = UniformIntegerHyperparameter(
                 "min_samples_split", 2, 20, default_value=2)
 
@@ -107,13 +107,13 @@ class RandomForest:
             min_impurity_decrease = UnParametrizedHyperparameter('min_impurity_decrease', 0.0)
             min_weight_fraction_leaf = UnParametrizedHyperparameter("min_weight_fraction_leaf", 0.)
         elif space_size == 'medium':
-            max_features = UniformFloatHyperparameter("max_features", 0., 1., default_value=0.5)
+            n_estimators = UniformIntegerHyperparameter('n_estimators', 50, 800, default_value=100)
             max_depth = UniformIntegerHyperparameter("max_depth", 4, 12, default_value=5)
-            min_samples_leaf = UniformIntegerHyperparameter(
-                "min_samples_leaf", 1, 20, default_value=1)
-            n_estimators = UniformIntegerHyperparameter('n_estimators', 50, 1000, default_value=100)
 
-            min_samples_split = UnParametrizedHyperparameter("min_samples_split", 2)
+            max_features = UniformFloatHyperparameter("max_features", 0.3, 1., default_value=0.5)
+            min_samples_leaf = UniformIntegerHyperparameter("min_samples_leaf", 1, 20, default_value=1)
+            min_samples_split = UniformIntegerHyperparameter("min_samples_split", 2, 20, default_value=2)
+
             bootstrap = UnParametrizedHyperparameter("bootstrap", "True")
             criterion = UnParametrizedHyperparameter("criterion", "gini")
 
@@ -121,13 +121,12 @@ class RandomForest:
             min_impurity_decrease = UnParametrizedHyperparameter('min_impurity_decrease', 0.0)
             min_weight_fraction_leaf = UnParametrizedHyperparameter("min_weight_fraction_leaf", 0.)
         else:
-            max_features = UniformFloatHyperparameter("max_features", 0., 1., default_value=0.5)
+            n_estimators = UniformIntegerHyperparameter('n_estimators', 50, 800, default_value=100)
             max_depth = UniformIntegerHyperparameter("max_depth", 4, 12, default_value=5)
+            max_features = UniformFloatHyperparameter("max_features", 0.3, 1., default_value=0.5)
+
             min_samples_leaf = UnParametrizedHyperparameter("min_samples_leaf", 1)
-
-            n_estimators = UnParametrizedHyperparameter('n_estimators', 100)
             min_samples_split = UnParametrizedHyperparameter("min_samples_split", 2)
-
             bootstrap = UnParametrizedHyperparameter("bootstrap", "True")
             criterion = UnParametrizedHyperparameter("criterion", "gini")
 

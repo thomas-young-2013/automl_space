@@ -56,16 +56,15 @@ class LightGBM:
         """
         if space_size == 'large':
             cs = ConfigurationSpace()
-            reg_alpha = UniformFloatHyperparameter("reg_alpha", 0, 10, q=0.1, default_value=0)
+            n_estimators = UniformIntegerHyperparameter("n_estimators", 50, 1000, q=50, default_value=100)
             learning_rate = UniformFloatHyperparameter("learning_rate", 1e-3, 0.9, log=True, default_value=0.1)
-            colsample_bytree = UniformFloatHyperparameter("colsample_bytree", 0.1, 1, q=0.1, default_value=1)
+            num_leaves = UniformIntegerHyperparameter("num_leaves", 31, 2047, default_value=128, q=10)
 
-            n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, q=50, default_value=500)
+            reg_alpha = UniformFloatHyperparameter("reg_alpha", 0, 10, q=0.1, default_value=0)
+            colsample_bytree = UniformFloatHyperparameter("colsample_bytree", 0.1, 1, q=0.1, default_value=1)
             min_child_weight = UniformFloatHyperparameter("min_child_weight", 0, 10, q=0.1, default_value=1)
 
-            num_leaves = UniformIntegerHyperparameter("num_leaves", 31, 2047, default_value=128)
             reg_lambda = UniformFloatHyperparameter("reg_lambda", 1, 10, q=0.1, default_value=1)
-
             subsample = UniformFloatHyperparameter("subsample", 0.1, 1, q=0.1, default_value=1)
             max_depth = UnParametrizedHyperparameter('max_depth', 15)
 
@@ -73,16 +72,15 @@ class LightGBM:
                                     colsample_bytree, reg_alpha, reg_lambda])
         elif space_size == 'medium':
             cs = ConfigurationSpace()
-            reg_alpha = UniformFloatHyperparameter("reg_alpha", 0, 10, q=0.1, default_value=0)
+            n_estimators = UniformIntegerHyperparameter("n_estimators", 50, 1000, q=50, default_value=100)
             learning_rate = UniformFloatHyperparameter("learning_rate", 1e-3, 0.9, log=True, default_value=0.1)
-            colsample_bytree = UniformFloatHyperparameter("colsample_bytree", 0.1, 1, q=0.1, default_value=1)
+            num_leaves = UniformIntegerHyperparameter("num_leaves", 31, 2047, default_value=128, q=10)
 
-            n_estimators = UniformIntegerHyperparameter("n_estimators", 100, 1000, q=50, default_value=500)
+            reg_alpha = UniformFloatHyperparameter("reg_alpha", 0, 10, q=0.1, default_value=0)
+            colsample_bytree = UniformFloatHyperparameter("colsample_bytree", 0.1, 1, q=0.1, default_value=1)
             min_child_weight = UniformFloatHyperparameter("min_child_weight", 0, 10, q=0.1, default_value=1)
 
-            num_leaves = UnParametrizedHyperparameter("num_leaves", 128)
             reg_lambda = UnParametrizedHyperparameter("reg_lambda", 1)
-
             subsample = UnParametrizedHyperparameter("subsample", 1)
             max_depth = UnParametrizedHyperparameter('max_depth', 15)
 
@@ -90,16 +88,15 @@ class LightGBM:
                                     colsample_bytree, reg_alpha, reg_lambda])
         else:
             cs = ConfigurationSpace()
-            reg_alpha = UniformFloatHyperparameter("reg_alpha", 0, 10, q=0.1, default_value=0)
+            n_estimators = UniformIntegerHyperparameter("n_estimators", 50, 1000, q=50, default_value=100)
             learning_rate = UniformFloatHyperparameter("learning_rate", 1e-3, 0.9, log=True, default_value=0.1)
-            colsample_bytree = UniformFloatHyperparameter("colsample_bytree", 0.1, 1, q=0.1, default_value=1)
+            num_leaves = UniformIntegerHyperparameter("num_leaves", 31, 2047, default_value=128, q=10)
 
-            n_estimators = UnParametrizedHyperparameter("n_estimators", 500)
+            reg_alpha = UnParametrizedHyperparameter("reg_alpha", 0)
+            colsample_bytree = UnParametrizedHyperparameter("colsample_bytree", 1)
             min_child_weight = UnParametrizedHyperparameter("min_child_weight", 1)
 
-            num_leaves = UnParametrizedHyperparameter("num_leaves", 128)
             reg_lambda = UnParametrizedHyperparameter("reg_lambda", 1)
-
             subsample = UnParametrizedHyperparameter("subsample", 1)
             max_depth = UnParametrizedHyperparameter('max_depth', 15)
 
