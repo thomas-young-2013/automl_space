@@ -50,31 +50,31 @@ class Adaboost:
         """
         cs = ConfigurationSpace()
         if space_size == 'large':
-            max_depth = UniformIntegerHyperparameter(
-                name="max_depth", lower=3, upper=10, default_value=5)
-            learning_rate = UniformFloatHyperparameter(
-                name="learning_rate", lower=0.01, upper=2, default_value=0.1, log=True)
             n_estimators = UniformIntegerHyperparameter(
                 name="n_estimators", lower=50, upper=500, default_value=50, log=False)
+            learning_rate = UniformFloatHyperparameter(
+                name="learning_rate", lower=0.01, upper=2, default_value=0.1, log=True)
+            max_depth = UniformIntegerHyperparameter(
+                name="max_depth", lower=3, upper=10, default_value=5)
             algorithm = CategoricalHyperparameter(
                 name="algorithm", choices=["SAMME.R", "SAMME"], default_value="SAMME.R")
             cs.add_hyperparameters([n_estimators, learning_rate, algorithm, max_depth])
         elif space_size == 'medium':
-            max_depth = UniformIntegerHyperparameter(
-                name="max_depth", lower=3, upper=10, default_value=5)
-            learning_rate = UniformFloatHyperparameter(
-                name="learning_rate", lower=0.01, upper=2, default_value=0.1, log=True)
             n_estimators = UniformIntegerHyperparameter(
                 name="n_estimators", lower=50, upper=500, default_value=50, log=False)
+            learning_rate = UniformFloatHyperparameter(
+                name="learning_rate", lower=0.01, upper=2, default_value=0.1, log=True)
+            max_depth = UniformIntegerHyperparameter(
+                name="max_depth", lower=3, upper=10, default_value=5)
             algorithm = CategoricalHyperparameter(
                 name="algorithm", choices=["SAMME.R", "SAMME"], default_value="SAMME.R")
             cs.add_hyperparameters([n_estimators, learning_rate, algorithm, max_depth])
         else:
-            max_depth = UniformIntegerHyperparameter(
-                name="max_depth", lower=3, upper=10, default_value=5)
+            n_estimators = UniformIntegerHyperparameter(
+                name="n_estimators", lower=50, upper=500, default_value=50)
             learning_rate = UniformFloatHyperparameter(
-                name="learning_rate", lower=0.01, upper=2, default_value=0.1, log=True)
-            n_estimators = UnParametrizedHyperparameter("n_estimators", 50)
+                name="learning_rate", lower=0.01, upper=2, default_value=0.1)
+            max_depth = UnParametrizedHyperparameter("max_depth", 5)
             algorithm = UnParametrizedHyperparameter("algorithm", "SAMME.R")
             cs.add_hyperparameters([n_estimators, learning_rate, algorithm, max_depth])
         return cs

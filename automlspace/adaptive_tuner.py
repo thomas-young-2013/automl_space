@@ -16,7 +16,9 @@ class AdaptiveTuner(object):
         self.max_run = max_run
         self.random_state = random_state
         self._hp_cnt = 0
+        self._delta = 2
         self.history_dict = OrderedDict()
+        self.hp_size = len(self.importance_list)
 
         # Obtain the default values.
         hps = self.config_space.get_hyperparameters()
@@ -37,7 +39,10 @@ class AdaptiveTuner(object):
             self.iterate()
 
     def get_configspace(self):
-        hp_num = self._hp_cnt + 1
+        hp_num = self._hp_cnt + self._delta
+        if hp_num > self.hp_size:
+            hp_num = self.hp_size
+
         hps = self.config_space.get_hyperparameters()
         cs = ConfigurationSpace()
         for _id in range(hp_num):
@@ -47,13 +52,14 @@ class AdaptiveTuner(object):
                     cs.add_hyperparameter(_hp)
 
         history_list = list()
-        if len(self.history_dict.keys()) > 0 and hp_num <= len(self.importance_list):
-            new_hp = self.importance_list[self._hp_cnt]
-            print('hp_num=', self._hp_cnt, 'new hp is', new_hp)
+        if len(self.history_dict.keys()) > 0 and self._hp_cnt < self.hp_size:
             for _config in self.history_dict.keys():
                 # Impute the default value for new hyperparameter.
                 _config_dict = _config.get_dictionary().copy()
-                _config_dict[new_hp] = self.defaults[new_hp]
+                for _idx in range(self._hp_cnt, hp_num):
+                    new_hp = self.importance_list[_idx]
+                    # print('hp_num=', self._hp_cnt, 'new hp is', new_hp)
+                    _config_dict[new_hp] = self.defaults[new_hp]
                 history_list.append((_config_dict, self.history_dict[_config]))
         if len(history_list) == 0:
             history_list = [(_config, self.history_dict[_config]) for _config in self.history_dict.keys()]
@@ -93,7 +99,7 @@ class AdaptiveTuner(object):
 
         smbo = SMBO(self.evaluate_wrapper, config_space,
                     max_runs=iter_num,
-                    init_num=init_num, task_id='smbo%d' % self._hp_cnt)
+                    init_num=init_num, task_id='smbo%d' % self._hp_cnt, random_state=self.random_state)
 
         # Set the history trials.
         for _config_dict, _perf in hist_list:
@@ -110,8 +116,9 @@ class AdaptiveTuner(object):
         for _config, perf in zip(smbo.config_advisor.configurations, smbo.config_advisor.perfs):
             self.history_dict[_config] = perf
 
-        if self._hp_cnt < len(self.importance_list) - 1:
-            self._hp_cnt += 1
+        self._hp_cnt += self._delta
+        if self._hp_cnt >= self.hp_size:
+            self._hp_cnt = self.hp_size
 
     def get_history(self):
         return list(self.history_dict.items())

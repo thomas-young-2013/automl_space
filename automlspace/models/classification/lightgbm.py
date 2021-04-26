@@ -58,7 +58,7 @@ class LightGBM:
             cs = ConfigurationSpace()
             n_estimators = UniformIntegerHyperparameter("n_estimators", 50, 1000, q=50, default_value=100)
             learning_rate = UniformFloatHyperparameter("learning_rate", 1e-3, 0.9, log=True, default_value=0.1)
-            num_leaves = UniformIntegerHyperparameter("num_leaves", 31, 2047, default_value=128, q=10)
+            num_leaves = UniformIntegerHyperparameter("num_leaves", 31, 2047, default_value=128)
 
             reg_alpha = UniformFloatHyperparameter("reg_alpha", 0, 10, q=0.1, default_value=0)
             colsample_bytree = UniformFloatHyperparameter("colsample_bytree", 0.1, 1, q=0.1, default_value=1)
@@ -74,7 +74,7 @@ class LightGBM:
             cs = ConfigurationSpace()
             n_estimators = UniformIntegerHyperparameter("n_estimators", 50, 1000, q=50, default_value=100)
             learning_rate = UniformFloatHyperparameter("learning_rate", 1e-3, 0.9, log=True, default_value=0.1)
-            num_leaves = UniformIntegerHyperparameter("num_leaves", 31, 2047, default_value=128, q=10)
+            num_leaves = UniformIntegerHyperparameter("num_leaves", 31, 2047, default_value=128)
 
             reg_alpha = UniformFloatHyperparameter("reg_alpha", 0, 10, q=0.1, default_value=0)
             colsample_bytree = UniformFloatHyperparameter("colsample_bytree", 0.1, 1, q=0.1, default_value=1)
@@ -90,7 +90,7 @@ class LightGBM:
             cs = ConfigurationSpace()
             n_estimators = UniformIntegerHyperparameter("n_estimators", 50, 1000, q=50, default_value=100)
             learning_rate = UniformFloatHyperparameter("learning_rate", 1e-3, 0.9, log=True, default_value=0.1)
-            num_leaves = UniformIntegerHyperparameter("num_leaves", 31, 2047, default_value=128, q=10)
+            num_leaves = UniformIntegerHyperparameter("num_leaves", 31, 2047, default_value=128)
 
             reg_alpha = UnParametrizedHyperparameter("reg_alpha", 0)
             colsample_bytree = UnParametrizedHyperparameter("colsample_bytree", 1)

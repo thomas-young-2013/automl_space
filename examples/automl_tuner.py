@@ -80,18 +80,18 @@ elif method == 'ada-bo':
         importance_list = ['n_estimators', 'learning_rate', 'max_depth', 'colsample_bytree', 'gamma',
                            'min_child_weight', 'reg_alpha', 'reg_lambda', 'subsample']
     elif algo == 'lightgbm':
-        importance_list = ['reg_alpha', 'learning_rate', 'colsample_bytree', 'n_estimators',
-                           'min_child_weight', 'num_leaves', 'reg_lambda', 'subsample', 'max_depth']
+        importance_list = ['n_estimators', 'learning_rate', 'num_leaves', 'reg_alpha', 'colsample_bytree',
+                           'min_child_weight', 'reg_lambda', 'subsample', 'max_depth']
     elif algo == 'adaboost':
-        importance_list = ['max_depth', 'learning_rate', 'n_estimators', 'algorithm']
+        importance_list = ['n_estimators', 'learning_rate', 'max_depth', 'algorithm']
     elif algo == 'random_forest':
-        importance_list = ['max_features', 'max_depth', 'min_samples_leaf', 'n_estimators',
+        importance_list = ['n_estimators', 'max_depth', 'max_features', 'min_samples_leaf',
                            'min_samples_split', 'bootstrap', 'criterion', 'max_leaf_nodes',
                            'min_impurity_decrease', 'min_weight_fraction_leaf']
     else:
         raise ValueError('Invalid algorithm~')
 
-    tuner = AdaptiveTuner(objective_func, cs, importance_list, max_run=max_run, step_size=6)
+    tuner = AdaptiveTuner(objective_func, cs, importance_list, max_run=max_run, step_size=10)
     tuner.run()
     print(tuner.get_incumbent())
 elif method == 'lite-bo':
