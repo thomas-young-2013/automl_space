@@ -19,8 +19,6 @@ sys.path.insert(0, '.')
 sys.path.insert(1, litebo_path)
 sys.path.insert(2, solnml_path)
 
-from litebo.optimizer.generic_smbo import SMBO
-
 # sys.path.append(os.getcwd())
 # sys.path.append("../soln-ml/")
 
@@ -38,11 +36,12 @@ default_datasets = 'spambase,optdigits,satimage,wind,delta_ailerons,puma8NH,kin8
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--datasets', type=str, default=default_datasets)
-parser.add_argument('--method', type=str, default='ada-bo')  # random-search, ada-bo, lite-bo, tpe
+parser.add_argument('--method', type=str, default='ada-bo')  # random-search, lite-bo, tpe, ada-bo
 parser.add_argument('--space_size', type=str, default='large', choices=['large', 'medium', 'small'])
 parser.add_argument('--algo', type=str, default='xgboost')  # xgboost, lightgbm, adaboost, random_forest
 parser.add_argument('--max_run', type=int, default=200)
 parser.add_argument('--step_size', type=int, default=10)  # for AdaptiveTuner
+parser.add_argument('--n_jobs', type=int, default=4)
 parser.add_argument('--rep', type=int, default=1)
 parser.add_argument('--start_id', type=int, default=0)
 
@@ -54,6 +53,7 @@ algo = args.algo
 max_run = args.max_run
 step_size = args.step_size
 
+n_jobs = args.n_jobs
 rep = args.rep
 start_id = args.start_id
 
@@ -76,13 +76,13 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
     def objective_func(config):
         conf_dict = config.get_dictionary()
         if algo == 'xgboost':
-            model = XGBoost(**conf_dict, n_jobs=4, seed=1)
+            model = XGBoost(**conf_dict, n_jobs=n_jobs, seed=1)
         elif algo == 'lightgbm':
-            model = LightGBM(**conf_dict, n_jobs=4, random_state=1)
+            model = LightGBM(**conf_dict, n_jobs=n_jobs, random_state=1)
         elif algo == 'adaboost':
             model = Adaboost(**conf_dict, random_state=1)
         elif algo == 'random_forest':
-            model = RandomForest(**conf_dict, n_jobs=4, random_state=1)
+            model = RandomForest(**conf_dict, n_jobs=n_jobs, random_state=1)
         else:
             raise ValueError('Invalid algorithm~')
 
@@ -123,6 +123,7 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         config_list = list(tuner.history_dict.keys())
         perf_list = list(tuner.history_dict.values())
     elif method == 'lite-bo':
+        from litebo.optimizer.generic_smbo import SMBO
         task_id = 'tuning-litebo-%s-%s-%s-%d' % (dataset, algo, space_size, seed)
         bo = SMBO(objective_func, cs,
                   advisor_type='default',
@@ -136,6 +137,7 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         config_list = list(data.keys())
         perf_list = list(data.values())
     elif method == 'tpe':
+        from litebo.optimizer.smbo import SMBO  # todo: DeprecationWarning
         task_id = 'tuning-tpe-%s-%s-%s-%d' % (dataset, algo, space_size, seed)
         bo = SMBO(objective_func, cs,
                   advisor_type='tpe',
@@ -150,6 +152,13 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         perf_list = list(data.values())
     else:
         raise ValueError('Invalid method id - %s.' % args.method)
+
+    if len(config_list) > max_run:
+        print('len of result: %d. max_run: %d. cut off.' % (len(config_list), max_run))
+        config_list = config_list[:max_run]
+        perf_list = perf_list[:max_run]
+    if len(config_list) < max_run:
+        print('===== WARNING: len of result: %d. max_run: %d.' % (len(config_list), max_run))
     return config_list, perf_list
 
 

@@ -39,3 +39,22 @@ def check_datasets(datasets, solnml_path):
             print('Dataset - %s load error: %s' % (_dataset, str(e)))
             raise
 
+
+# ===== for plot =====
+
+def descending(x):
+    y = [x[0]]
+    for i in range(1, len(x)):
+        y.append(min(y[-1], x[i]))
+    return y
+
+
+def check_list(perf_list: list, max_run):
+    if len(perf_list) > max_run:
+        print('len of result: %d. max_run: %d. cut off.' % (len(perf_list), max_run))
+        perf_list = perf_list[:max_run]
+    if len(perf_list) < max_run:
+        print('===== WARNING: len of result: %d. max_run: %d. extend.' % (len(perf_list), max_run))
+        n = max_run - len(perf_list)
+        perf_list.extend([perf_list[-1]] * n)
+    return perf_list
