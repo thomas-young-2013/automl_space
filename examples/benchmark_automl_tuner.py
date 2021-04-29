@@ -41,6 +41,7 @@ parser.add_argument('--datasets', type=str, default=default_datasets)
 parser.add_argument('--method', type=str, default='ada-bo')  # random-search, ada-bo, lite-bo, tpe
 parser.add_argument('--space_size', type=str, default='large', choices=['large', 'medium', 'small'])
 parser.add_argument('--algo', type=str, default='xgboost')  # xgboost, lightgbm, adaboost, random_forest
+parser.add_argument('--strategy', type=str, default='default')  # default, tpe, random.
 parser.add_argument('--max_run', type=int, default=200)
 parser.add_argument('--step_size', type=int, default=10)  # for AdaptiveTuner
 parser.add_argument('--rep', type=int, default=1)
@@ -53,6 +54,7 @@ space_size = args.space_size
 algo = args.algo
 max_run = args.max_run
 step_size = args.step_size
+strategy = args.strategy
 
 rep = args.rep
 start_id = args.start_id
@@ -116,8 +118,8 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         else:
             raise ValueError('Invalid algorithm~')
 
-        tuner = AdaptiveTuner(objective_func, cs, importance_list, max_run=max_run, step_size=step_size,
-                              random_state=seed)
+        tuner = AdaptiveTuner(objective_func, cs, importance_list,
+                              strategy=strategy, max_run=max_run, step_size=step_size, random_state=seed)
         tuner.run()
         print(tuner.get_incumbent())
         config_list = list(tuner.history_dict.keys())

@@ -1,15 +1,18 @@
 import numpy as np
 from collections import OrderedDict
+from ConfigSpace.util import deactivate_inactive_hyperparameters
 from litebo.optimizer.generic_smbo import SMBO
 from litebo.utils.config_space import ConfigurationSpace
-from ConfigSpace.util import deactivate_inactive_hyperparameters
+from litebo.utils.constants import SUCCESS
+from litebo.core.base import Observation
 
 
 class AdaptiveTuner(object):
     def __init__(self, objective_function, config_space, importance_list,
-                 max_run=100, step_size=10, random_state=1):
+                 strategy='default', max_run=100, step_size=10, random_state=1):
         self.objective_function = objective_function
         self.importance_list = importance_list
+        self.strategy = strategy
         self.config_space = config_space
         self.config_space.seed(random_state)
         self.step_size = step_size
@@ -17,6 +20,7 @@ class AdaptiveTuner(object):
         self.random_state = random_state
         self._hp_cnt = 0
         self._delta = 2
+        self._trial_num = 0
         self.history_dict = OrderedDict()
         self.hp_size = len(self.importance_list)
 
@@ -35,8 +39,9 @@ class AdaptiveTuner(object):
                 raise ValueError('HP name %s is not in the hyper-parameter space.' % _hp)
 
     def run(self):
-        while len(self.history_dict.keys()) < self.max_run:
+        while self._trial_num < self.max_run:
             self.iterate()
+            self._trial_num += self.step_size
 
     def get_configspace(self):
         hp_num = self._hp_cnt + self._delta
@@ -98,22 +103,24 @@ class AdaptiveTuner(object):
         iter_num = self.step_size
 
         smbo = SMBO(self.evaluate_wrapper, config_space,
+                    advisor_type=self.strategy,
                     max_runs=iter_num,
-                    init_num=init_num, task_id='smbo%d' % self._hp_cnt, random_state=self.random_state)
+                    init_num=init_num,
+                    task_id='smbo%d' % self._hp_cnt,
+                    random_state=self.random_state)
 
         # Set the history trials.
         for _config_dict, _perf in hist_list:
             config = deactivate_inactive_hyperparameters(configuration_space=config_space,
                                                          configuration=_config_dict)
-            smbo.config_advisor.configurations.append(config)
-            smbo.config_advisor.perfs.append(_perf)
-            smbo.config_advisor.history_container.add(config, _perf)
-
+            _observation = Observation(config, SUCCESS, None, (_perf,))
+            smbo.config_advisor.history_container.update_observation(_observation)
         smbo.run()
 
         # Save the runhistory.
         self.history_dict = OrderedDict()
-        for _config, perf in zip(smbo.config_advisor.configurations, smbo.config_advisor.perfs):
+        for _config, perf in zip(smbo.config_advisor.history_container.configurations,
+                                 smbo.config_advisor.history_container.perfs):
             self.history_dict[_config] = perf
 
         self._hp_cnt += self._delta
