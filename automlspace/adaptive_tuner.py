@@ -124,7 +124,7 @@ class AdaptiveTuner(object):
             self.history_dict[_config] = perf
 
         self._hp_cnt += self._delta
-        if self._hp_cnt >= self.hp_size:
+        if self._hp_cnt > self.hp_size:
             self._hp_cnt = self.hp_size
 
     def get_history(self):
