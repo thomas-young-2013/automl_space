@@ -13,7 +13,7 @@ def run_exp(datasets, cs, rep_num, objective_func, algo_id, data_dir='../soln-ml
 
             X = []
             Y = []
-            configs = cs.sample_configuration(rep_num * 1.2)    # prevent failure
+            configs = cs.sample_configuration(int(rep_num * 1.2))    # prevent failure
             fail_num = 0
             for config in configs:
                 try:
