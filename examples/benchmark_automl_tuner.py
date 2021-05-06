@@ -1,5 +1,5 @@
 """
-python examples/benchmark_automl_tuner.py --datasets spambase --method ada-bo --space_size large --algo xgboost --max_run 200 --step_size 6 --rep 10 --start_id 0
+python examples/benchmark_automl_tuner.py --datasets spambase --method ada-bo --space_size large --algo xgboost --max_run 200 --step_size 10 --rep 1 --start_id 0
 
 """
 
@@ -19,7 +19,7 @@ sys.path.insert(0, '.')
 sys.path.insert(1, litebo_path)
 sys.path.insert(2, solnml_path)
 
-# sys.path.append(os.getcwd())
+# sys.path.insert(0, '.')
 # sys.path.append("../soln-ml/")
 
 from automlspace.random_tuner import RandomTuner
@@ -39,7 +39,7 @@ parser.add_argument('--datasets', type=str, default=default_datasets)
 parser.add_argument('--method', type=str, default='ada-bo')  # random-search, lite-bo, tpe, ada-bo
 parser.add_argument('--space_size', type=str, default='large', choices=['large', 'medium', 'small'])
 parser.add_argument('--algo', type=str, default='xgboost')  # xgboost, lightgbm, adaboost, random_forest
-parser.add_argument('--strategy', type=str, default='default')  # default, tpe, random.
+parser.add_argument('--strategy', type=str, default='default')  # default, tpe, random. for AdaptiveTuner
 parser.add_argument('--max_run', type=int, default=200)
 parser.add_argument('--step_size', type=int, default=10)  # for AdaptiveTuner
 parser.add_argument('--n_jobs', type=int, default=4)
@@ -135,11 +135,11 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
                   random_state=seed)
         bo.run()
         print(bo.get_incumbent())
-        data = bo.get_history().data
-        config_list = list(data.keys())
-        perf_list = list(data.values())
+        history = bo.get_history()
+        config_list = history.configurations
+        perf_list = history.perfs
     elif method == 'tpe':
-        from litebo.optimizer.smbo import SMBO  # todo: DeprecationWarning
+        from litebo.optimizer.generic_smbo import SMBO
         task_id = 'tuning-tpe-%s-%s-%s-%d' % (dataset, algo, space_size, seed)
         bo = SMBO(objective_func, cs,
                   advisor_type='tpe',
@@ -149,9 +149,9 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
                   random_state=seed)
         bo.run()
         print(bo.get_incumbent())
-        data = bo.get_history().data
-        config_list = list(data.keys())
-        perf_list = list(data.values())
+        history = bo.get_history()
+        config_list = history.configurations
+        perf_list = history.perfs
     else:
         raise ValueError('Invalid method id - %s.' % args.method)
 
@@ -173,6 +173,8 @@ with timeit('all'):
                 try:
                     timestamp = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
                     method_str = method
+                    if method == 'ada-bo':
+                        method_str = '%s-%s' % (method, strategy)
                     method_id = method_str + '-%s-%s-%s-%d-%s' % (dataset, algo, space_size, seed, timestamp)
 
                     config_list, perf_list = evaluate(dataset, method, algo, space_size, max_run, step_size, seed)

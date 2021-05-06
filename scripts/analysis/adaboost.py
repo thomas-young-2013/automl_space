@@ -9,7 +9,7 @@ import pickle as pkl
 import os
 import sys
 
-sys.path.append(os.getcwd())
+sys.path.insert(0, '.')
 sys.path.append('../fanova')
 from fanova import fANOVA
 

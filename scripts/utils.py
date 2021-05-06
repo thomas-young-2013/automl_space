@@ -2,7 +2,7 @@ import os
 import sys
 from sklearn.model_selection import train_test_split
 
-sys.path.append(os.getcwd())
+sys.path.insert(0, '.')
 sys.path.append("../soln-ml")
 
 from solnml.components.feature_engineering.transformation_graph import DataNode

@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from utils import descending, check_list
 
 default_datasets = 'spambase,optdigits,satimage,wind,delta_ailerons,puma8NH,kin8nm,cpu_small,puma32H,cpu_act,bank32nh'
-default_algos = 'xgboost,lightgbm,adaboost,random_forest'
+default_algos = 'xgboost,lightgbm,random_forest'    # adaboost
 default_mths = 'random-search,lite-bo,tpe,ada-bo'
 default_sizes = 'small,medium,large'
 
@@ -47,6 +47,12 @@ def fetch_color_marker(m_list):
     for name in m_list:
         if name.startswith('random-search'):
             fill_values(name, 0)
+        elif name.startswith('ada-bo-tpe'):
+            fill_values(name, 5)
+        elif name.startswith('ada-bo-random'):
+            fill_values(name, 6)
+        elif name.startswith('ada-bo-s'):
+            fill_values(name, 7)
         elif name.startswith('ada-bo'):
             fill_values(name, 4)
         elif name.startswith('lite-bo'):
@@ -102,6 +108,8 @@ def plot(dataset, algo, save_fig=False):
 
     for mth in mths:
         for space_size in sizes:
+            if mth.startswith('ada-bo') and space_size != 'large':  # excluded
+                continue
             stats = []
             dir_path = 'data/automl_tuner/%s-%d/%s-%s/%s/' % (dataset, max_run, algo, space_size, mth)
             if not os.path.exists(dir_path):
