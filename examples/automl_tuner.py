@@ -6,7 +6,7 @@ import pickle as pkl
 import matplotlib.pyplot as plt
 from litebo.optimizer.generic_smbo import SMBO
 
-sys.path.append(os.getcwd())
+sys.path.insert(0, '.')
 sys.path.append("../soln-ml")
 
 parser = argparse.ArgumentParser()

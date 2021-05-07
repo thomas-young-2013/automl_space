@@ -4,7 +4,7 @@ import pickle as pkl
 import os
 import sys
 
-sys.path.append(os.getcwd())
+sys.path.insert(0, '.')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--rep_num', type=int, default=1000)

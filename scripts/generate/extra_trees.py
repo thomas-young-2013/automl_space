@@ -7,9 +7,9 @@ import pickle as pkl
 import os
 import sys
 
-sys.path.append(os.getcwd())
-
-from scripts.utils import load_train_test_data, check_datasets, check_none, check_for_bool
+sys.path.insert(0, '.')
+from generate_utils import run_exp
+from scripts.utils import check_none, check_for_bool
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--datasets', type=str, default='None')
@@ -125,25 +125,8 @@ def objective_func(config, x_train, x_val, y_train, y_val):
 if __name__ == '__main__':
     args = parser.parse_args()
     datasets = args.datasets.split(',')
-    check_datasets(datasets, data_dir='../soln-ml/')
     rep_num = args.rep_num
 
     algo_id = 'extra_trees'
 
-    for dataset in datasets:
-        try:
-            train_node, test_node = load_train_test_data(dataset, data_dir='../soln-ml/')
-            train_x, train_y = train_node.data
-            test_x, test_y = test_node.data
-
-            X = []
-            Y = []
-            configs = cs.sample_configuration(rep_num)
-            for config in configs:
-                X.append(config.get_dictionary())
-                Y.append(objective_func(config, train_x, test_x, train_y, test_y))
-            with open('./data/%s_%s_%d.pkl' % (algo_id, dataset, rep_num), 'wb') as f:
-                pkl.dump((X, Y), f)
-        except Exception as e:
-            print(e)
-            print('%s failed!' % dataset)
+    run_exp(datasets, cs, rep_num, objective_func, algo_id, data_dir='../soln-ml/')
