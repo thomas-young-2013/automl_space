@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 import pickle as pkl
 import matplotlib.pyplot as plt
-from litebo.optimizer.generic_smbo import SMBO
+from openbox.optimizer.generic_smbo import SMBO
 
 sys.path.insert(0, '.')
 sys.path.append("../soln-ml")
@@ -94,11 +94,11 @@ elif method == 'ada-bo':
     tuner = AdaptiveTuner(objective_func, cs, importance_list, max_run=max_run, step_size=10)
     tuner.run()
     print(tuner.get_incumbent())
-elif method == 'lite-bo':
+elif method == 'open-box':
     bo = SMBO(objective_func, cs,
               advisor_type='default',
               max_runs=max_run,
-              task_id='tuning-litebo',
+              task_id='tuning-openbox',
               logging_dir='logs')
     bo.run()
     print(bo.get_incumbent())

@@ -12,11 +12,11 @@ import numpy as np
 import pickle as pkl
 #import matplotlib.pyplot as plt
 
-litebo_path = '../lite-bo/'
+openbox_path = '../open-box/'
 solnml_path = '../../soln-ml/'
 
 sys.path.insert(0, '.')
-sys.path.insert(1, litebo_path)
+sys.path.insert(1, openbox_path)
 sys.path.insert(2, solnml_path)
 
 # sys.path.insert(0, '.')
@@ -36,7 +36,7 @@ default_datasets = 'spambase,optdigits,satimage,wind,delta_ailerons,puma8NH,kin8
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--datasets', type=str, default=default_datasets)
-parser.add_argument('--method', type=str, default='ada-bo')  # random-search, lite-bo, tpe, ada-bo
+parser.add_argument('--method', type=str, default='ada-bo')  # random-search, open-box, tpe, ada-bo
 parser.add_argument('--space_size', type=str, default='large', choices=['large', 'medium', 'small'])
 parser.add_argument('--algo', type=str, default='xgboost')  # xgboost, lightgbm, adaboost, random_forest
 parser.add_argument('--strategy', type=str, default='default')  # default, tpe, random. for AdaptiveTuner
@@ -124,9 +124,9 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         print(tuner.get_incumbent())
         config_list = list(tuner.history_dict.keys())
         perf_list = list(tuner.history_dict.values())
-    elif method == 'lite-bo':
-        from litebo.optimizer.generic_smbo import SMBO
-        task_id = 'tuning-litebo-%s-%s-%s-%d' % (dataset, algo, space_size, seed)
+    elif method == 'open-box':
+        from openbox.optimizer.generic_smbo import SMBO
+        task_id = 'tuning-openbox-%s-%s-%s-%d' % (dataset, algo, space_size, seed)
         bo = SMBO(objective_func, cs,
                   advisor_type='default',
                   max_runs=max_run,
@@ -139,7 +139,7 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         config_list = history.configurations
         perf_list = history.perfs
     elif method == 'tpe':
-        from litebo.optimizer.generic_smbo import SMBO
+        from openbox.optimizer.generic_smbo import SMBO
         task_id = 'tuning-tpe-%s-%s-%s-%d' % (dataset, algo, space_size, seed)
         bo = SMBO(objective_func, cs,
                   advisor_type='tpe',

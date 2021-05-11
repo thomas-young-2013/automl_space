@@ -14,7 +14,7 @@ from utils import descending, check_list
 
 default_datasets = 'spambase,optdigits,satimage,wind,delta_ailerons,puma8NH,kin8nm,cpu_small,puma32H,cpu_act,bank32nh'
 default_algos = 'xgboost,lightgbm,random_forest'    # adaboost
-default_mths = 'random-search,lite-bo,tpe,ada-bo'
+default_mths = 'random-search,open-box,tpe,ada-bo'
 default_sizes = 'small,medium,large'
 
 parser = argparse.ArgumentParser()
@@ -55,7 +55,7 @@ def fetch_color_marker(m_list):
             fill_values(name, 7)
         elif name.startswith('ada-bo'):
             fill_values(name, 4)
-        elif name.startswith('lite-bo'):
+        elif name.startswith('open-box'):
             fill_values(name, 1)
         elif name.startswith('tpe'):
             fill_values(name, 2)

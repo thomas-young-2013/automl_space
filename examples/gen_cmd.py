@@ -7,7 +7,7 @@ cmd = 'nohup python examples/benchmark_automl_tuner.py --datasets %s --method %s
 
 end = 'sleep 5\ntail -f %s\nsleep 1'
 
-method_list = ['random-search', 'ada-bo', 'lite-bo', 'tpe']
+method_list = ['random-search', 'ada-bo', 'open-box', 'tpe']
 space_size_list = ['small', 'medium', 'large']
 algo_list = ['xgboost', 'lightgbm', 'random_forest']    # 'adaboost'
 
