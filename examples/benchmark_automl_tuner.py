@@ -8,23 +8,15 @@ import sys
 import time
 import argparse
 import traceback
-import numpy as np
 import pickle as pkl
-#import matplotlib.pyplot as plt
 
-<<<<<<< HEAD
-litebo_path = '../open-box/'
-=======
 openbox_path = '../open-box/'
->>>>>>> 32da6ae9afae5e1ecbb05b5e5ce4ccd0b19e9e7e
-solnml_path = '../../soln-ml/'
+solnml_path = '../soln-ml/'
 
 sys.path.insert(0, '.')
 sys.path.insert(1, openbox_path)
 sys.path.insert(2, solnml_path)
 
-# sys.path.insert(0, '.')
-# sys.path.append("../soln-ml/")
 
 from automlspace.random_tuner import RandomTuner
 from automlspace.adaptive_tuner import AdaptiveTuner
@@ -33,7 +25,7 @@ from automlspace.models.classification.xgboost import XGBoost
 from automlspace.models.classification.adaboost import Adaboost
 from automlspace.models.classification.random_forest import RandomForest
 from automlspace.utils.utils import seeds, timeit, load_data, check_datasets
-from automlspace.utils.dataset_loader import load_data, load_meta_feature
+from automlspace.utils.dataset_loader import load_meta_data, load_meta_feature
 
 path = os.path.dirname(os.path.realpath(__file__))
 
@@ -128,24 +120,15 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         print('Previous important list is', ','.join(importance_list))
 
         if use_meta_order == "yes":
-            if algo == 'xgboost':
-                importance_list = ['n_estimators', 'learning_rate', 'max_depth', 'colsample_bytree', 'gamma',
-                                   'min_child_weight', 'reg_alpha', 'reg_lambda', 'subsample']
-            elif algo == 'lightgbm':
-                importance_list = ['n_estimators', 'learning_rate', 'num_leaves', 'reg_alpha', 'colsample_bytree',
-                                   'min_child_weight', 'reg_lambda', 'subsample', 'max_depth']
-            elif algo == 'adaboost':
-                importance_list = ['n_estimators', 'learning_rate', 'max_depth', 'algorithm']
-            elif algo == 'random_forest':
-                importance_list = ['n_estimators', 'max_depth', 'max_features', 'min_samples_leaf',
-                                   'min_samples_split', 'bootstrap', 'criterion', 'max_leaf_nodes',
-                                   'min_impurity_decrease', 'min_weight_fraction_leaf']
+            data_, scaler_ = load_meta_data(algorithm=algo, dataset_ids=None, include_scaler=True)
+            X, y, labels = data_
 
-            X, y, labels = load_data(algorithm=algo, dataset_ids=None)
             from automlspace.ranknet import RankNetAdvisor
-            advisor = RankNetAdvisor()
+            advisor = RankNetAdvisor(algorithm_id=algo)
             advisor.fit(X, y)
+
             new_embeding = load_meta_feature(dataset_id=dataset)
+            new_embeding = scaler_.transform([new_embeding])[0]
             importance_list = advisor.predict_ranking(new_embeding, rank_objs=labels)
             print('New important list is', ','.join(importance_list))
 

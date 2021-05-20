@@ -5,7 +5,7 @@ import pickle as pkl
 sys.path.append(os.getcwd())
 
 
-from automlspace.utils.dataset_loader import get_dataset_ids, load_data, preproceess_data
+from automlspace.utils.dataset_loader import get_dataset_ids, load_meta_data, preproceess_data
 
 """
     data format:{
@@ -51,8 +51,8 @@ def cross_validate(algorithm_id='random_forest'):
         advisor = RankNetAdvisor()
 
         train_datasets = [item for item in dataset_ids if item not in test_datasets]
-        X_train, y_train, _ = load_data(algorithm=algorithm_id, dataset_ids=train_datasets)
-        X_test, y_test, _ = load_data(algorithm=algorithm_id, dataset_ids=test_datasets)
+        X_train, y_train, _ = load_meta_data(algorithm=algorithm_id, dataset_ids=train_datasets)
+        X_test, y_test, _ = load_meta_data(algorithm=algorithm_id, dataset_ids=test_datasets)
 
         advisor.fit(X_train, y_train)
 
@@ -66,7 +66,7 @@ def cross_validate(algorithm_id='random_forest'):
 
 
 def demo_evaluate(algorithm_id='random_forest'):
-    X, y, labels = load_data(algorithm=algorithm_id, dataset_ids=None)
+    X, y, labels = load_meta_data(algorithm=algorithm_id, dataset_ids=None)
     from automlspace.ranknet import RankNetAdvisor
     advisor = RankNetAdvisor()
     advisor.fit(X, y)

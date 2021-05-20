@@ -10,7 +10,7 @@ def get_dataset_ids():
     return list(data.keys())
 
 
-def load_data(algorithm='random_forest', dataset_ids=None):
+def load_meta_data(algorithm='random_forest', dataset_ids=None, include_scaler=False):
     data_file = os.path.join('data', 'info.pkl')
     with open(data_file, 'rb') as f:
         data = pkl.load(f)
@@ -39,6 +39,8 @@ def load_data(algorithm='random_forest', dataset_ids=None):
         _item['hp_importance'] = hp_importance
         _item['hp_list'] = hyperparameter_ids.copy()
         result.append(_item)
+    if include_scaler:
+        return preproceess_data(result), scaler
     return preproceess_data(result)
 
 
@@ -55,7 +57,8 @@ def load_meta_feature(dataset_id=''):
         data = pkl.load(f)
     dataset_embeding = data['dataset_embedding']
     task_ids = data['task_ids']
+    # print(dataset_embeding, task_ids)
     for _key, _value in zip(task_ids, dataset_embeding):
-        if _key == dataset_id:
+        if _key == 'init_' + dataset_id:
             return _value
     raise ValueError('Embeding for %s not found.' % dataset_id)

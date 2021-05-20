@@ -9,9 +9,14 @@ from keras.optimizers import SGD
 
 
 class RankNetAdvisor(object):
-    def __init__(self):
+    def __init__(self, algorithm_id):
         self.model = None
         self.n_candidate = None
+        self.algorithm_id = algorithm_id
+        self.model_dir = os.path.join('data', 'model_dir')
+        if not os.path.exists(self.model_dir):
+            os.makedirs(self.model_dir)
+        self.model_path = os.path.join(self.model_dir, '%s_ranknet_model.pkl' % self.algorithm_id)
 
     def create_pairwise_data(self, X, y):
         X1, X2, labels = list(), list(), list()
@@ -88,12 +93,16 @@ class RankNetAdvisor(object):
         act_func = kwargs.get('activation', 'tanh')
         batch_size = kwargs.get('batch_size', 128)
 
-        self.model = self.create_model(X1.shape[1], hidden_layer_sizes=(l1_size, l2_size,),
-                                       activation=(act_func, act_func,),
-                                       solver='adam')
-
-        self.model.fit([X1, X2], y_, epochs=200, batch_size=batch_size)
-        print("save model...")
+        if self.model is None:
+            if os.path.exists(self.model_path):
+                self.model = load_model(self.model_path)
+            else:
+                self.model = self.create_model(X1.shape[1], hidden_layer_sizes=(l1_size, l2_size,),
+                                               activation=(act_func, act_func,),
+                                               solver='adam')
+                self.model.fit([X1, X2], y_, epochs=200, batch_size=batch_size)
+                print("save model...")
+                self.model.save(self.model_path)
 
     def predict(self, dataset_vec):
         assert (self.n_candidate != None), 'Please call <fit> first.'
@@ -110,7 +119,9 @@ class RankNetAdvisor(object):
 
     def predict_ranking(self, dataset_vec, rank_objs=None):
         preds = self.predict(dataset_vec)
+        print(preds)
         ranking = np.argsort(-np.array(preds))
+        print(ranking)
         if rank_objs is None:
             return ranking
         else:

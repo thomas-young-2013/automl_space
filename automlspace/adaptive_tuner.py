@@ -113,7 +113,7 @@ class AdaptiveTuner(object):
         for _config_dict, _perf in hist_list:
             config = deactivate_inactive_hyperparameters(configuration_space=config_space,
                                                          configuration=_config_dict)
-            _observation = Observation(config, SUCCESS, None, (_perf,))
+            _observation = Observation(config, SUCCESS, None, (_perf,), None)
             smbo.config_advisor.history_container.update_observation(_observation)
         smbo.run()
 
