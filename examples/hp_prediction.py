@@ -4,6 +4,9 @@ import numpy as np
 import pickle as pkl
 sys.path.append(os.getcwd())
 
+
+from automlspace.utils.dataset_loader import get_dataset_ids, load_data, preproceess_data
+
 """
     data format:{
         dataset: {
@@ -15,52 +18,6 @@ sys.path.append(os.getcwd())
         }
     }
 """
-
-
-def get_dataset_ids():
-    data_file = os.path.join('data', 'info.pkl')
-    with open(data_file, 'rb') as f:
-        data = pkl.load(f)
-    return list(data.keys())
-
-
-def load_data(algorithm='random_forest', dataset_ids=None):
-    data_file = os.path.join('data', 'info.pkl')
-    with open(data_file, 'rb') as f:
-        data = pkl.load(f)
-    if dataset_ids is None:
-        dataset_ids = data.keys()
-
-    print('datasets', dataset_ids)
-    meta_feature_ids = sorted(data[list(data.keys())[0]]['meta_features'].keys())
-    hyperparameter_ids = sorted(data[list(data.keys())[0]][algorithm].keys())
-
-    from sklearn.preprocessing import StandardScaler
-    scaler = StandardScaler()
-
-    meta_mat = list()
-    for _key in data.keys():
-        meta_vector = [data[_key]['meta_features'][_id] for _id in meta_feature_ids]
-        meta_mat.append(meta_vector)
-    scaler.fit(np.array(meta_mat), None)
-
-    result = list()
-    for _key in dataset_ids:
-        meta_vector = [data[_key]['meta_features'][_id] for _id in meta_feature_ids]
-        hp_importance = [data[_key][algorithm][_id] for _id in hyperparameter_ids]
-        _item = dict()
-        _item['meta_feature'] = scaler.transform(np.array([meta_vector]))[0]
-        _item['hp_importance'] = hp_importance
-        _item['hp_list'] = hyperparameter_ids.copy()
-        result.append(_item)
-    return preproceess_data(result)
-
-
-def preproceess_data(data):
-    hp_list = data[0]['hp_list']
-    meta_features = [item['meta_feature'] for item in data]
-    importance = [item['hp_importance'] for item in data]
-    return np.asarray(meta_features), np.asarray(importance), hp_list
 
 
 def average_precision_atN(preds, true_labels):
@@ -85,7 +42,7 @@ def cross_validate(algorithm_id='random_forest'):
     from automlspace.ranknet import RankNetAdvisor
     dataset_ids = get_dataset_ids()
     np.random.shuffle(dataset_ids)
-    n_fold = 10
+    n_fold = 5
     fold_size = len(dataset_ids) // n_fold
     aps, top1 = list(), list()
 
@@ -122,5 +79,17 @@ def demo_evaluate(algorithm_id='random_forest'):
 
 
 if __name__ == "__main__":
+    """
+    # 10-fold cv.
+    random forest: 0.5775776014109348 Top1 0.7888888888888889
+    lightgmb: 0.5550504605134234 Top1 0.4777777777777778
+    adaboost: 0.7087962962962961 Top1 0.6777777777777778
+    extra_trees: 0.5604907407407408 Top1 0.8222222222222222
+    # 5-fold cv.
+    random forest: 0.5583383458646617 Top1 0.7684210526315789
+    lightgmb: 0.5246328784925276 Top1 0.47368421052631576
+    adaboost: 0.7179824561403512 Top1 0.7263157894736842
+    extra_trees: 0.564485380116959 Top1 0.8
+    """
     # demo_evaluate(algorithm_id='random_forest')
-    cross_validate(algorithm_id='adaboost')
+    cross_validate(algorithm_id='extra_trees')

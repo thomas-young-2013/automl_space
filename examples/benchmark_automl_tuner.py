@@ -12,7 +12,7 @@ import numpy as np
 import pickle as pkl
 #import matplotlib.pyplot as plt
 
-litebo_path = '../lite-bo/'
+litebo_path = '../open-box/'
 solnml_path = '../../soln-ml/'
 
 sys.path.insert(0, '.')
@@ -28,7 +28,8 @@ from automlspace.models.classification.lightgbm import LightGBM
 from automlspace.models.classification.xgboost import XGBoost
 from automlspace.models.classification.adaboost import Adaboost
 from automlspace.models.classification.random_forest import RandomForest
-from utils import seeds, timeit, load_data, check_datasets
+from automlspace.utils.utils import seeds, timeit, load_data, check_datasets
+from automlspace.utils.dataset_loader import load_data, load_meta_feature
 
 path = os.path.dirname(os.path.realpath(__file__))
 
@@ -36,7 +37,7 @@ default_datasets = 'spambase,optdigits,satimage,wind,delta_ailerons,puma8NH,kin8
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--datasets', type=str, default=default_datasets)
-parser.add_argument('--method', type=str, default='ada-bo')  # random-search, lite-bo, tpe, ada-bo
+parser.add_argument('--method', type=str, default='ada-bo')  # random-search, openbox, tpe, ada-bo
 parser.add_argument('--space_size', type=str, default='large', choices=['large', 'medium', 'small'])
 parser.add_argument('--algo', type=str, default='xgboost')  # xgboost, lightgbm, adaboost, random_forest
 parser.add_argument('--strategy', type=str, default='default')  # default, tpe, random. for AdaptiveTuner
@@ -45,6 +46,8 @@ parser.add_argument('--step_size', type=int, default=10)  # for AdaptiveTuner
 parser.add_argument('--n_jobs', type=int, default=4)
 parser.add_argument('--rep', type=int, default=1)
 parser.add_argument('--start_id', type=int, default=0)
+parser.add_argument('--meta_order', type=str, default='no', choices=['no', 'yes'])
+
 
 args = parser.parse_args()
 datasets = args.datasets.split(',')
@@ -54,6 +57,7 @@ algo = args.algo
 max_run = args.max_run
 step_size = args.step_size
 strategy = args.strategy
+use_meta_order = args.meta_order
 
 n_jobs = args.n_jobs
 rep = args.rep
@@ -117,6 +121,29 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
                                'min_impurity_decrease', 'min_weight_fraction_leaf']
         else:
             raise ValueError('Invalid algorithm~')
+        print('Previous important list is', ','.join(importance_list))
+
+        if use_meta_order == "yes":
+            if algo == 'xgboost':
+                importance_list = ['n_estimators', 'learning_rate', 'max_depth', 'colsample_bytree', 'gamma',
+                                   'min_child_weight', 'reg_alpha', 'reg_lambda', 'subsample']
+            elif algo == 'lightgbm':
+                importance_list = ['n_estimators', 'learning_rate', 'num_leaves', 'reg_alpha', 'colsample_bytree',
+                                   'min_child_weight', 'reg_lambda', 'subsample', 'max_depth']
+            elif algo == 'adaboost':
+                importance_list = ['n_estimators', 'learning_rate', 'max_depth', 'algorithm']
+            elif algo == 'random_forest':
+                importance_list = ['n_estimators', 'max_depth', 'max_features', 'min_samples_leaf',
+                                   'min_samples_split', 'bootstrap', 'criterion', 'max_leaf_nodes',
+                                   'min_impurity_decrease', 'min_weight_fraction_leaf']
+
+            X, y, labels = load_data(algorithm=algo, dataset_ids=None)
+            from automlspace.ranknet import RankNetAdvisor
+            advisor = RankNetAdvisor()
+            advisor.fit(X, y)
+            new_embeding = load_meta_feature(dataset_id=dataset)
+            importance_list = advisor.predict_ranking(new_embeding, rank_objs=labels)
+            print('New important list is', ','.join(importance_list))
 
         tuner = AdaptiveTuner(objective_func, cs, importance_list,
                               strategy=strategy, max_run=max_run, step_size=step_size, random_state=seed)
@@ -124,8 +151,8 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         print(tuner.get_incumbent())
         config_list = list(tuner.history_dict.keys())
         perf_list = list(tuner.history_dict.values())
-    elif method == 'lite-bo':
-        from litebo.optimizer.generic_smbo import SMBO
+    elif method == 'openbox':
+        from openbox.optimizer.generic_smbo import SMBO
         task_id = 'tuning-litebo-%s-%s-%s-%d' % (dataset, algo, space_size, seed)
         bo = SMBO(objective_func, cs,
                   advisor_type='default',
@@ -139,7 +166,7 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         config_list = history.configurations
         perf_list = history.perfs
     elif method == 'tpe':
-        from litebo.optimizer.generic_smbo import SMBO
+        from openbox.optimizer.generic_smbo import SMBO
         task_id = 'tuning-tpe-%s-%s-%s-%d' % (dataset, algo, space_size, seed)
         bo = SMBO(objective_func, cs,
                   advisor_type='tpe',
