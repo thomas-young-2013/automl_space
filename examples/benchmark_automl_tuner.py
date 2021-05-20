@@ -12,11 +12,15 @@ import numpy as np
 import pickle as pkl
 #import matplotlib.pyplot as plt
 
+<<<<<<< HEAD
 litebo_path = '../open-box/'
+=======
+openbox_path = '../open-box/'
+>>>>>>> 32da6ae9afae5e1ecbb05b5e5ce4ccd0b19e9e7e
 solnml_path = '../../soln-ml/'
 
 sys.path.insert(0, '.')
-sys.path.insert(1, litebo_path)
+sys.path.insert(1, openbox_path)
 sys.path.insert(2, solnml_path)
 
 # sys.path.insert(0, '.')

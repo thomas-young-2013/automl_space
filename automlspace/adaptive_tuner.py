@@ -1,10 +1,10 @@
 import numpy as np
 from collections import OrderedDict
 from ConfigSpace.util import deactivate_inactive_hyperparameters
-from litebo.optimizer.generic_smbo import SMBO
-from litebo.utils.config_space import ConfigurationSpace
-from litebo.utils.constants import SUCCESS
-from litebo.core.base import Observation
+from openbox.optimizer.generic_smbo import SMBO
+from openbox.utils.config_space import ConfigurationSpace
+from openbox.utils.constants import SUCCESS
+from openbox.core.base import Observation
 
 
 class AdaptiveTuner(object):

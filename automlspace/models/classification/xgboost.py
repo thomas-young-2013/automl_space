@@ -1,5 +1,5 @@
 import numpy as np
-from litebo.utils.config_space import ConfigurationSpace
+from openbox.utils.config_space import ConfigurationSpace
 from ConfigSpace.hyperparameters import UniformFloatHyperparameter, \
     UniformIntegerHyperparameter, UnParametrizedHyperparameter
 
