@@ -24,6 +24,8 @@ from automlspace.models.classification.lightgbm import LightGBM
 from automlspace.models.classification.xgboost import XGBoost
 from automlspace.models.classification.adaboost import Adaboost
 from automlspace.models.classification.random_forest import RandomForest
+from automlspace.models.classification.extra_trees import ExtraTrees
+
 from automlspace.utils.utils import seeds, timeit, load_data, check_datasets
 from automlspace.utils.dataset_loader import load_meta_data, load_meta_feature
 
@@ -71,8 +73,10 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         model_class = Adaboost
     elif algo == 'random_forest':
         model_class = RandomForest
+    elif algo == 'extra_trees':
+        model_class = ExtraTrees
     else:
-        raise ValueError('Invalid algorithm~')
+        raise ValueError('Invalid algorithm: %s!' % algo)
     cs = model_class.get_hyperparameter_search_space(space_size=space_size)
 
     x_train, y_train, x_val, y_val = load_data(dataset, solnml_path)
@@ -87,8 +91,10 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
             model = Adaboost(**conf_dict, random_state=1)
         elif algo == 'random_forest':
             model = RandomForest(**conf_dict, n_jobs=n_jobs, random_state=1)
+        elif algo == 'extra_trees':
+            model = ExtraTrees(**conf_dict, n_jobs=n_jobs, random_state=1)
         else:
-            raise ValueError('Invalid algorithm~')
+            raise ValueError('Invalid algorithm: %s' % algo)
 
         model.fit(x_train, y_train)
 
@@ -127,6 +133,10 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         elif algo == 'adaboost':
             importance_list = ['n_estimators', 'learning_rate', 'max_depth', 'algorithm']
         elif algo == 'random_forest':
+            importance_list = ['n_estimators', 'max_depth', 'max_features', 'min_samples_leaf',
+                               'min_samples_split', 'bootstrap', 'criterion', 'max_leaf_nodes',
+                               'min_impurity_decrease', 'min_weight_fraction_leaf']
+        elif algo == 'extra_trees':
             importance_list = ['n_estimators', 'max_depth', 'max_features', 'min_samples_leaf',
                                'min_samples_split', 'bootstrap', 'criterion', 'max_leaf_nodes',
                                'min_impurity_decrease', 'min_weight_fraction_leaf']
