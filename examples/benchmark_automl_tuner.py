@@ -27,6 +27,8 @@ from automlspace.models.classification.random_forest import RandomForest
 from automlspace.utils.utils import seeds, timeit, load_data, check_datasets
 from automlspace.utils.dataset_loader import load_meta_data, load_meta_feature
 
+from keras import backend as K  # for segmentation fault bug
+
 path = os.path.dirname(os.path.realpath(__file__))
 
 default_datasets = 'spambase,optdigits,satimage,wind,delta_ailerons,puma8NH,kin8nm,cpu_small,puma32H,cpu_act,bank32nh'
@@ -97,11 +99,24 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         return perf
 
     if method == 'random-search':
-        tuner = RandomTuner(objective_func, cs, max_run=max_run, random_state=seed)
-        tuner.run()
-        print(tuner.get_incumbent())
-        config_list = list(tuner.history_dict.keys())
-        perf_list = list(tuner.history_dict.values())
+        # tuner = RandomTuner(objective_func, cs, max_run=max_run, random_state=seed)
+        # tuner.run()
+        # print(tuner.get_incumbent())
+        # config_list = list(tuner.history_dict.keys())
+        # perf_list = list(tuner.history_dict.values())
+        from openbox.optimizer.generic_smbo import SMBO
+        task_id = 'tuning-random-%s-%s-%s-%d' % (dataset, algo, space_size, seed)
+        bo = SMBO(objective_func, cs,
+                  advisor_type='random',
+                  max_runs=max_run,
+                  task_id=task_id,
+                  logging_dir='logs',
+                  random_state=seed)
+        bo.run()
+        print(bo.get_incumbent())
+        history = bo.get_history()
+        config_list = history.configurations
+        perf_list = history.perfs
     elif method == 'ada-bo':
         if algo == 'xgboost':
             importance_list = ['n_estimators', 'learning_rate', 'max_depth', 'colsample_bytree', 'gamma',
@@ -140,7 +155,7 @@ def evaluate(dataset, method, algo, space_size, max_run, step_size, seed):
         perf_list = list(tuner.history_dict.values())
     elif method == 'openbox':
         from openbox.optimizer.generic_smbo import SMBO
-        task_id = 'tuning-litebo-%s-%s-%s-%d' % (dataset, algo, space_size, seed)
+        task_id = 'tuning-openbox-%s-%s-%s-%d' % (dataset, algo, space_size, seed)
         bo = SMBO(objective_func, cs,
                   advisor_type='default',
                   max_runs=max_run,
@@ -188,16 +203,22 @@ with timeit('all'):
                     timestamp = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
                     method_str = method
                     if method == 'ada-bo':
-                        method_str = '%s-%s' % (method, strategy)
-                    method_id = method_str + '-%s-%s-%s-%d-%s' % (dataset, algo, space_size, seed, timestamp)
+                        if strategy != 'default':
+                            method_str += '-%s' % strategy
+                        if use_meta_order == 'yes':
+                            method_str += '-meta'
+                    method_id = method_str + '-%s-%s-%s-%04d-%s' % (dataset, algo, space_size, seed, timestamp)
 
                     config_list, perf_list = evaluate(dataset, method, algo, space_size, max_run, step_size, seed)
 
                     save_item = (config_list, perf_list)
                     dir_path = 'data/automl_tuner/%s-%d/%s-%s/%s/' % (dataset, max_run, algo, space_size, method_str)
                     file_name = 'record_%s.pkl' % (method_id,)
-                    if not os.path.exists(dir_path):
-                        os.makedirs(dir_path)
+                    try:
+                        if not os.path.exists(dir_path):
+                            os.makedirs(dir_path)
+                    except FileExistsError:
+                        pass
                     with open(os.path.join(dir_path, file_name), 'wb') as f:
                         pkl.dump(save_item, f)
                     print(dir_path, file_name, 'saved!', flush=True)

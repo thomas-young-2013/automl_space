@@ -6,15 +6,17 @@ python examples/benchmark_plot.py --datasets spambase,optdigits --algos xgboost 
 """
 import argparse
 import os
+import sys
 import numpy as np
 import pickle as pkl
 import matplotlib.pyplot as plt
 
-from utils import descending, check_list
+sys.path.insert(0, '.')
+from automlspace.utils.utils import descending, check_list
 
 default_datasets = 'spambase,optdigits,satimage,wind,delta_ailerons,puma8NH,kin8nm,cpu_small,puma32H,cpu_act,bank32nh'
 default_algos = 'xgboost,lightgbm,random_forest'    # adaboost
-default_mths = 'random-search,open-box,tpe,ada-bo'
+default_mths = 'random-search,openbox,tpe,ada-bo'
 default_sizes = 'small,medium,large'
 
 parser = argparse.ArgumentParser()
@@ -47,18 +49,24 @@ def fetch_color_marker(m_list):
     for name in m_list:
         if name.startswith('random-search'):
             fill_values(name, 0)
+        elif name.startswith('openbox'):
+            fill_values(name, 1)
+        elif name.startswith('tpe'):
+            fill_values(name, 2)
+
         elif name.startswith('ada-bo-tpe'):
             fill_values(name, 5)
         elif name.startswith('ada-bo-random'):
             fill_values(name, 6)
         elif name.startswith('ada-bo-s'):
             fill_values(name, 7)
+
+        elif name.startswith('ada-bo-meta'):
+            fill_values(name, 5)
+
         elif name.startswith('ada-bo'):
             fill_values(name, 4)
-        elif name.startswith('open-box'):
-            fill_values(name, 1)
-        elif name.startswith('tpe'):
-            fill_values(name, 2)
+
         else:
             print('color not defined:', name)
             fill_values(name, 8)
@@ -162,7 +170,7 @@ def plot(dataset, algo, save_fig=False):
         file_name = '%s-%s.jpg' % (algo, dataset)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
-        plt.savefig(os.path.join(dir_path, file_name))
+        plt.savefig(os.path.join(dir_path, file_name), dpi=200)
         plt.clf()
     else:
         plt.show()

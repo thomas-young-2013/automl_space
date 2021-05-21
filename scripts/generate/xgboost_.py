@@ -88,7 +88,7 @@ cs = XGBoost.get_hyperparameter_search_space()
 
 def objective_func(config, x_train, x_val, y_train, y_val):
     conf_dict = config.get_dictionary()
-    model = XGBoost(**conf_dict)
+    model = XGBoost(**conf_dict, n_jobs=4)
     model.fit(x_train, y_train)
 
     from sklearn.metrics import balanced_accuracy_score
