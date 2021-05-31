@@ -48,7 +48,7 @@ def cross_validate(algorithm_id='random_forest'):
 
     for i in range(n_fold):
         test_datasets = dataset_ids[i * fold_size: (i + 1) * fold_size]
-        advisor = RankNetAdvisor()
+        advisor = RankNetAdvisor(algorithm_id=algorithm_id)
 
         train_datasets = [item for item in dataset_ids if item not in test_datasets]
         X_train, y_train, _ = load_meta_data(algorithm=algorithm_id, dataset_ids=train_datasets)
