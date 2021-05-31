@@ -68,7 +68,7 @@ def cross_validate(algorithm_id='random_forest'):
 def demo_evaluate(algorithm_id='random_forest'):
     X, y, labels = load_meta_data(algorithm=algorithm_id, dataset_ids=None)
     from automlspace.ranknet import RankNetAdvisor
-    advisor = RankNetAdvisor()
+    advisor = RankNetAdvisor(algorithm_id=algorithm_id)
     advisor.fit(X, y)
     x = X[0]
     y_pred = advisor.predict(x)
