@@ -8,8 +8,8 @@ import os
 import sys
 
 sys.path.insert(0, '.')
-from generate_utils import run_exp
 from scripts.utils import check_none, check_for_bool
+from scripts.generate.generate_utils import run_exp
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--datasets', type=str, default='None')

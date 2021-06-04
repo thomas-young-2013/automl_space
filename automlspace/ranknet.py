@@ -16,7 +16,7 @@ class RankNetAdvisor(object):
         self.model_dir = os.path.join('data', 'model_dir')
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
-        self.model_path = os.path.join(self.model_dir, '%s_ranknet_model.pkl' % self.algorithm_id)
+        self.model_path = os.path.join(self.model_dir, '%s_ranknet_model' % self.algorithm_id)
 
     def create_pairwise_data(self, X, y):
         X1, X2, labels = list(), list(), list()
@@ -101,8 +101,8 @@ class RankNetAdvisor(object):
                                                activation=(act_func, act_func,),
                                                solver='adam')
                 self.model.fit([X1, X2], y_, epochs=200, batch_size=batch_size)
-                print("save model...")
-                self.model.save(self.model_path)
+                # print("save model...")
+                # self.model.save(self.model_path)
 
     def predict(self, dataset_vec):
         assert (self.n_candidate != None), 'Please call <fit> first.'

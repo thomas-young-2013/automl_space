@@ -8,7 +8,7 @@ import os
 import sys
 
 sys.path.insert(0, '.')
-from generate_utils import run_exp
+from scripts.generate.generate_utils import run_exp
 from scripts.utils import check_none, check_for_bool
 
 parser = argparse.ArgumentParser()

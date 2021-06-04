@@ -216,7 +216,7 @@ with timeit('all'):
                         if strategy != 'default':
                             method_str += '-%s' % strategy
                         if use_meta_order == 'yes':
-                            method_str += '-meta'
+                            method_str += ''
                     method_id = method_str + '-%s-%s-%s-%04d-%s' % (dataset, algo, space_size, seed, timestamp)
 
                     config_list, perf_list = evaluate(dataset, method, algo, space_size, max_run, step_size, seed)
